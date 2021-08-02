@@ -1166,6 +1166,11 @@ export class BaseProvider extends Provider implements EnsProvider {
 
         const result = <TransactionResponse>tx;
 
+        // NOTE: Adapt for conflux
+        if (hash !=null ) {
+          tx.hash = hash;
+        }
+
         // Check the hash we expect is the same as the hash the server reported
         if (hash != null && tx.hash !== hash) {
             logger.throwError("Transaction hash mismatch from Provider.sendTransaction.", Logger.errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
