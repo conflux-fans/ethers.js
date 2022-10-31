@@ -74,7 +74,7 @@ _property: signer.signMessage(message) => Promise<string<[RawSignature](signatur
 This returns a Promise which resolves to the [[signature-raw]]
 of //message//.
 
-A signed message is prefixd with ``"\\x19Ethereum signed message:\\n"`` and
+A signed message is prefixd with ``"\\x19Ethereum Signed Message:\\n"`` and
 the length of the message, using the [hashMessage](utils-hashMessage)
 method, so that it is [EIP-191](link-eip-191) compliant. If recovering
 the address in Solidity, this prefix will be required to create a matching
@@ -228,7 +228,7 @@ does not have a secure entropy source, an error is thrown.
 Wallets created using this method will have a mnemonic.
 
 _property: ethers.Wallet.fromEncryptedJson(json, password [ , progress ])  => Promise<[[Wallet]]> @<Wallet-fromEncryptedJson> @SRC<wallet>
-Create an instance from an encrypted JSON wallet.
+Create an instance by decrypting an encrypted JSON wallet.
 
 If //progress// is provided it will be called during decryption
 with a value between 0 and 1 indicating the progress towards

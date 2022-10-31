@@ -59,7 +59,7 @@ export class Eip1193Bridge extends EventEmitter {
              }
              case "eth_chainId": {
                  const result = await this.provider.getNetwork();
-                 return result.chainId;
+                 return ethers.utils.hexValue(result.chainId);
              }
              case "eth_getBalance": {
                  const result = await this.provider.getBalance(params[0], params[1]);
@@ -78,7 +78,7 @@ export class Eip1193Bridge extends EventEmitter {
                  return ethers.utils.hexValue(result.transactions.length);
              }
              case "eth_getCode": {
-                 const result = await this.provider.getBlock(params[0]);
+                 const result = await this.provider.getCode(params[0], params[1]);
                  return result;
              }
              case "eth_sendRawTransaction": {
@@ -98,7 +98,7 @@ export class Eip1193Bridge extends EventEmitter {
                  return result.toHexString();
              }
 
-             // @TOOD: Transform? No uncles?
+             // @TODO: Transform? No uncles?
              case "eth_getBlockByHash":
              case "eth_getBlockByNumber": {
                  if (params[1]) {

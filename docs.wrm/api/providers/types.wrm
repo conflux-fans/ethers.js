@@ -34,6 +34,23 @@ _property: network.ensAddress => string<[[address]]>
 The address at which the ENS registry is deployed on this network.
 
 
+_subsection: FeeData @<providers-FeeData>
+
+A **FeeData** object encapsulates the necessary fee data required
+to send a transaction, based on the best available recommendations.
+
+_property: feeData.gasPrice => [[BigNumber]]
+The gasPrice to use for legacy transactions or networks which do not
+support EIP-1559.
+
+_property: feeData.maxFeePerGas => [[BigNumber]]
+The ``maxFeePerGas`` to use for a transaction. This is based on the
+most recent block's ``baseFee``.
+
+_property: feeData.maxPriorityFeePerGas => [[BigNumber]]
+The ``maxPriorityFeePerGas`` to use for a transaction. This accounts
+for the uncle risk and for the majority of current MEV risk.
+
 _subsection: Block @<providers-Block>
 
 _property: block.hash => string<[[DataHexString]]<32>>
@@ -55,6 +72,21 @@ This property is generally of little interest to developers.
 
 _property: block.difficulty => number
 The difficulty target required to be met by the miner of the block.
+
+Recently the difficulty frequently exceeds the size that a JavaScript
+number can safely store (53-bits), so in that case this property may
+be null. It is recommended to use the `_difficulty` property below,
+which will always return a value, but as a [[BigNumber]].
+
+This property is generally of little interest to developers.
+
+_property: block._difficulty => [[BigNumber]]
+The difficulty target required to be met by the miner of the block,
+as a [[BigNumber]].
+
+Recently the difficulty frequently exceeds the size that a JavaScript
+number can safely store (53-bits), so this property was added to
+safely encode the value for applications that require it.
 
 This property is generally of little interest to developers.
 
@@ -183,17 +215,46 @@ _property: transactionRequest.nonce => number | Promise<number>
 The nonce for this transaction. This should be set to the number of
 transactions ever sent **from** this address.
 
-_property: transactionRequest.gasLimit => [[BigNumber]] | Promise<[[BigNumber]]>
-The maximum amount of gas this transaction is permitted to use.
-
-_property: transactionRequest.gasPrice => [[BigNumber]] | Promise<[[BigNumber]]>
-The price (in wei) per unit of gas this transaction will pay.
-
 _property: transactionRequest.data => [[DataHexString]] | Promise<[[DataHexString]]>
 The transaction data.
 
 _property: transactionRequest.value => [[BigNumber]] | Promise<[[BigNumber]]>
 The amount (in wei) this transaction is sending.
+
+_property: transactionRequest.gasLimit => [[BigNumber]] | Promise<[[BigNumber]]>
+The maximum amount of gas this transaction is permitted to use.
+
+If left unspecified, ethers will use ``estimateGas`` to determine the value
+to use. For transactions with unpredicatable gas estimates, this may be required
+to specify explicitly.
+
+_property: transactionRequest.gasPrice => [[BigNumber]] | Promise<[[BigNumber]]>
+The price (in wei) per unit of gas this transaction will pay.
+
+This may not be specified for transactions with ``type`` set to ``1`` or ``2``, or
+if ``maxFeePerGas`` or ``maxPriorityFeePerGas`` is given.
+
+_property: transactionRequest.maxFeePerGas => [[BigNumber]] | Promise<[[BigNumber]]>
+The maximum price (in wei) per unit of gas this transaction will pay for the
+combined [[link-eip-1559]] block's base fee and this transaction's priority fee.
+
+Most developers should leave this unspecified and use the default value that
+ethers determines from the network.
+
+This may not be specified for transactions with ``type`` set to ``0`` or if ``gasPrice``
+is specified..
+
+_property: transactionRequest.maxPriorityFeePerGas => [[BigNumber]] | Promise<[[BigNumber]]>
+The price (in wei) per unit of gas this transaction will allow in addition to
+the [[link-eip-1559]] block's base fee to bribe miners into giving this transaction
+priority. This is **included in** the ``maxFeePerGas``, so this will **not affect**
+the total maximum cost set with ``maxFeePerGas``.
+
+Most developers should leave this unspecified and use the default value that
+ethers determines from the network.
+
+This may not be specified for transactions with ``type`` set to ``0`` or if ``gasPrice``
+is specified.
 
 _property: transactionRequest.chainId => number | Promise<number>
 The chain ID this transaction is authorized on, as specified by
@@ -208,12 +269,13 @@ on recent versions of Geth and require configuration to enable.
 _property: transactionRequest.type => null | number
 
 The [[link-eip-2718]] type of this transaction envelope, or ``null``
-for legacy transactions that do not have an envelope.
+for to use the network default. To force using a lagacy transaction
+without an envelope, use type ``0``.
 
 _property: transactionRequest.accessList => [[providers-AccessListish]]
 
-The [[providers-AccessList]] to include in an [[link-eip-2930]] transaction, which will
-include a ``type`` of ``1``.
+The [[providers-AccessList]] to include; only available for [[link-eip-2930]]
+and [[link-eip-1559]] transactions.
 
 _heading: TransactionResponse @<providers-TransactionResponse> @INHERIT<[[Transaction]]>
 
@@ -237,7 +299,9 @@ The number of blocks that have been mined (including the initial block) since th
 transaction was mined.
 
 _property: transaction.raw => string<[[DataHexString]]>
-The serialized transaction.
+The serialized transaction. This may be null as some backends do not
+populate it. If this is required, it can be computed from a **TransactionResponse**
+object using [this cookbook recipe](cookbook--compute-raw-transaction).
 
 _property: transaction.wait([ confirms = 1 ]) => Promise<[[providers-TransactionReceipt]]>
 Resolves to the [[providers-TransactionReceipt]] once the transaction
@@ -267,15 +331,13 @@ send a new transaction from the same account with the original ``nonce``.
 This is usually to speed up a transaction or to cancel one, by bribing
 miners with additional fees to prefer the new transaction over the original one.
 
-_property: transactionRequest.type => null | number
-
-The [[link-eip-2718]] type of this transaction envelope, or ``null``
-for legacy transactions that do not have an envelope.
+_property: transactionRequest.type => number
+The [[link-eip-2718]] type of this transaction. If the transaction
+is a legacy transaction without an envelope, it will have the type ``0``.
 
 _property: transactionRequest.accessList => [[providers-AccessList]]
-
-The [[providers-AccessList]] included in an [[link-eip-2930]] transaction, which will
-also have its ``type`` equal to ``1``.
+The [[providers-AccessList]] included, or null for transaction types which
+do not support access lists.
 
 _heading: TransactionReceipt @<providers-TransactionReceipt>
 
@@ -299,6 +361,10 @@ _property: receipt.transactionIndex => number
 The index of this transaction in the list of transactions included in
 the block this transaction was mined in.
 
+_property: receipt.type => number
+The [[link-eip-2718]] type of this transaction. If the transaction
+is a legacy transaction without an envelope, it will have the type ``0``.
+
 _property: receipt.root => string
 The intermediate state root of a receipt.
 
@@ -312,6 +378,16 @@ must be considered.
 
 _property: receipt.gasUsed => [[BigNumber]]
 The amount of gas actually used by this transaction.
+
+_property: receipt.effectiveGasPrice => [[BigNumber]]
+The effective gas price the transaction was charged at.
+
+Prior to EIP-1559 or on chains that do not support it, this value will
+simply be equal to the transaction ``gasPrice``.
+
+On EIP-1559 chains, this is equal to the block ``baseFee`` for the block
+that the transaction was included in, plus the transaction
+``maxPriorityFeePerGas`` clamped to the transaction ``maxFeePerGas``.
 
 _property: receipt.logsBloom => string<[[DataHexString]]>
 A [bloom-filter](link-wiki-bloomfilter), which
@@ -346,7 +422,7 @@ _property: receipt.byzantium => boolean
 This is true if the block is in a [post-Byzantium Hard Fork](link-eip-609)
 block.
 
-_property: receipt.status => boolean
+_property: receipt.status => number
 The status of a transaction is 1 is successful or 0 if it was
 reverted. Only transactions included in blocks [post-Byzantium Hard Fork](link-eip-609)
 have this property.

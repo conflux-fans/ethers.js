@@ -117,9 +117,13 @@ const getSourceUrl = (function(path, include, exclude) {
     }
 })("../packages/", new RegExp("packages/.*/src.ts/.*\.ts$"), new RegExp("/node_modules/|src.ts/.*browser.*"));
 
+let localSigner = null;
+
 function codeContextify(context) {
     const { inspect } = require("util");
     const ethers = context.require("./packages/ethers");
+
+    if (localSigner == null) { localSigner = ethers.Wallet.createRandom(); }
 
     context.ethers = ethers;
     context.BigNumber = ethers.BigNumber;
@@ -133,9 +137,9 @@ function codeContextify(context) {
 
     // We use a local dev node for some signing examples, but want to
     // resolve ENS names against mainnet; super hacky but makes the
-    // docs nicer
+    // docs nicer (funded in _startup)
     context.localProvider = new ethers.providers.JsonRpcProvider();
-    context.localSigner = context.localProvider.getSigner();
+    context.localSigner = localSigner.connect(context.localProvider);
     context.localProvider.resolveName = context.provider.resolveName.bind(context.provider);
 
     context.BigNumber.prototype[inspect.custom] = function(depth, options) {
@@ -180,8 +184,14 @@ function codeContextify(context) {
         });
     }
 
-    context._startup = function() {
+    context._startup = async function() {
         console.log("Startup");
+        const signer = context.localProvider.getSigner();
+        const tx = await signer.sendTransaction({
+            to: localSigner.address,
+            value: ethers.utils.parseEther("10.0")
+        });
+        await tx.wait();
     }
 
     context._shutdown = function() {
@@ -192,7 +202,7 @@ function codeContextify(context) {
 
 module.exports = {
   title: "ethers",
-  subtitle: "v5.3",
+  subtitle: "v5.4",
   description: "Documentation for ethers, a complete, tiny and simple Ethereum library.",
   logo: "logo.svg",
 
@@ -216,6 +226,7 @@ module.exports = {
   externalLinks: {
       "link-mail": "mailto:me@ricmoo.com",
       "link-alchemy": { name: "Alchemy", url: "https:/\/alchemyapi.io" },
+      "link-ankr": { name: "Ankr", url: "https:/\/www.ankr.com" },
       "link-cloudflare": { name: "Cloudflare", url: "https:/\/developers.cloudflare.com/distributed-web/ethereum-gateway/" },
       "link-ens": { name: "ENS", url: "https:/\/ens.domains/" },
       "link-ethereum": { name: "Ethereum", url: "https:/\/ethereumorg" },
@@ -227,7 +238,7 @@ module.exports = {
       "link-infura": { name: "INFURA", url: "https:/\/infura.io" },
       "link-javascriptcore": { name: "JavaScriptCore", url: "https:/\/developer.apple.com/documentation/javascriptcore?language=objc" },
       "link-ledger": "https:/\/www.ledger.com",
-      "link-metamask": { name: "Metamask", url: "https:/\/metamask.io/" },
+      "link-metamask": { name: "MetaMask", url: "https:/\/metamask.io/" },
       "link-otto": "https:/\/github.com/robertkrimen/otto",
       "link-parity": { name: "Parity", url: "https:/\/www.parity.io" },
       "link-pocket": { name: "Pocket Network", url: "https:/\/pokt.network" },
@@ -240,6 +251,8 @@ module.exports = {
       "link-sphinx": { name: "Sphinx", url: "https:/\/www.sphinx-doc.org/" },
 
       "link-alchemy-signup": "https:/\/dashboard.alchemyapi.io/signup?referral=55a35117-028e-4b7c-9e47-e275ad0acc6d",
+      "link-ankr-public": "https:/\/www.ankr.com/protocol/public/",
+      "link-ankr-premium": "https:/\/www.ankr.com/protocol/plan/",
       "link-etherscan-signup": "https:/\/etherscan.io/apis",
       "link-etherscan-ratelimit": "https:/\/info.etherscan.com/api-return-errors/",
       "link-infura-signup": "https:/\/infura.io/register",
@@ -289,6 +302,7 @@ module.exports = {
       "link-eip-712": { name: "EIP-712", url: "https:/\/eips.ethereum.org/EIPS/eip-712" },
       "link-eip-1014": { name: "EIP-1014", url: "https:/\/eips.ethereum.org/EIPS/eip-1014" },
       "link-eip-1193": { name: "EIP-1193", url: "https:/\/eips.ethereum.org/EIPS/eip-1193" },
+      "link-eip-1559": { name: "EIP-1559", url: "https:/\/eips.ethereum.org/EIPS/eip-1559" },
       "link-eip-1577": { name: "EIP-1577", url: "https:/\/eips.ethereum.org/EIPS/eip-1577" },
       "link-eip-2098": { name: "EIP-2098", url: "https:/\/eips.ethereum.org/EIPS/eip-2098" },
       "link-eip-2304": { name: "EIP-2304", url: "https:/\/eips.ethereum.org/EIPS/eip-2304" },
@@ -329,7 +343,7 @@ module.exports = {
       "link-wiki-hmac": "https:/\/en.wikipedia.org/wiki/HMAC",
       "link-wiki-iban": "https:/\/en.wikipedia.org/wiki/International_Bank_Account_Number",
       "link-wiki-ieee754": "https:/\/en.wikipedia.org/wiki/Double-precision_floating-point_format",
-      "link-wiki-observer-pattern": { name: "Obeserver Pattern", url: "https:/\/en.wikipedia.org/wiki/Observer_pattern" },
+      "link-wiki-observer-pattern": { name: "Observer Pattern", url: "https:/\/en.wikipedia.org/wiki/Observer_pattern" },
       "link-wiki-phishing": "https:/\/en.wikipedia.org/wiki/Phishing",
       "link-wiki-ripemd": "https:/\/en.m.wikipedia.org/wiki/RIPEMD",
       "link-wiki-sha2": "https:/\/en.wikipedia.org/wiki/SHA-2",

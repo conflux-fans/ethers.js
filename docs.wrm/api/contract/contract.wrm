@@ -98,11 +98,12 @@ at run-time during the **Contract** constructor.
 
 _heading: Read-Only Methods (constant)  @<Contract--readonly>
 
-A constant method is read-only and evaluates a small amount of EVM
-code against the current blockchain state and can be computed by
-asking a single node, which can return a result. It is therefore
-free and does not require any ether, but **cannot make changes** to
-the blockchain state..
+A constant method (denoted by ``pure`` or ``view`` in Solidity)
+is read-only and evaluates a small amount of EVM code against the
+current blockchain state and can be computed by asking a single
+node, which can return a result. It is therefore free and does
+not require any ether, but **cannot make changes** to the
+blockchain state..
 
 _property: contract.METHOD_NAME(...args [, overrides ]) => Promise<any>  @<Contract-functionsCall>
 The type of the result depends on the ABI. If the method returns a single
@@ -111,7 +112,7 @@ be returned with each parameter available positionally and if the parameter
 is named, it will also be available by its name.
 
 For values that have a simple meaning in JavaScript, the types are fairly
-straight forward; strings and booleans are returned as JavaScript strings
+straightforward; strings and booleans are returned as JavaScript strings
 and booleans.
 
 For numbers, if the **type** is in the JavaScript safe range (i.e. less

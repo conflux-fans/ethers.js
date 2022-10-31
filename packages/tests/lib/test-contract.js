@@ -41,8 +41,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var assert_1 = __importDefault(require("assert"));
 var ethers_1 = require("ethers");
+var utils_1 = require("./utils");
 var test_contract_json_1 = __importDefault(require("./test-contract.json"));
-var provider = new ethers_1.ethers.providers.InfuraProvider("rinkeby", "49a0efa3aaee4fd99797bfa94d8ce2f1");
+var provider = new ethers_1.ethers.providers.InfuraProvider("goerli", "49a0efa3aaee4fd99797bfa94d8ce2f1");
 //const provider = ethers.getDefaultProvider("rinkeby");
 var TIMEOUT_PERIOD = 120000;
 var contract = (function () {
@@ -75,6 +76,14 @@ function TestContractEvents() {
         function waitForEvent(eventName, expected) {
             return new Promise(function (resolve, reject) {
                 var done = false;
+                contract.on("error", function (error) {
+                    if (done) {
+                        return;
+                    }
+                    done = true;
+                    contract.removeAllListeners();
+                    reject(error);
+                });
                 contract.on(eventName, function () {
                     if (done) {
                         return;
@@ -99,34 +108,34 @@ function TestContractEvents() {
                 }
             });
         }
-        var data;
+        var running, hash;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, ethers_1.ethers.utils.fetchJson('https://api.ethers.io/api/v1/?action=triggerTest&address=' + contract.address)];
-                case 1:
-                    data = _a.sent();
-                    console.log('*** Triggered Transaction Hash: ' + data.hash);
-                    contract.on("error", function (error) {
-                        console.log(error);
-                        assert_1.default(false);
-                        contract.removeAllListeners();
+                case 0:
+                    running = new Promise(function (resolve, reject) {
+                        var p0 = '0x06B5955A67D827CDF91823E3bB8F069e6c89c1D6';
+                        var p0_1 = '0x06b5955A67d827CdF91823e3Bb8F069e6C89C1d7';
+                        var p1 = 0x42;
+                        var p1_1 = 0x43;
+                        return Promise.all([
+                            waitForEvent('Test', [p0, p1]),
+                            waitForEvent('TestP0', [p0, p1]),
+                            waitForEvent('TestP0P1', [p0, p1]),
+                            waitForEvent('TestIndexedString', [{ indexed: true, hash: '0x7c5ea36004851c764c44143b1dcb59679b11c9a68e5f41497f6cf3d480715331' }, p1]),
+                            waitForEvent('TestV2', [{ indexed: true }, [p0, p1]]),
+                            waitForEvent('TestV2Nested', [{ indexed: true }, [p0_1, p1_1, [p0, p1]]]),
+                        ]).then(function (result) {
+                            resolve(result);
+                        });
                     });
-                    return [2 /*return*/, new Promise(function (resolve, reject) {
-                            var p0 = '0x06B5955A67D827CDF91823E3bB8F069e6c89c1D6';
-                            var p0_1 = '0x06b5955A67d827CdF91823e3Bb8F069e6C89C1d7';
-                            var p1 = 0x42;
-                            var p1_1 = 0x43;
-                            return Promise.all([
-                                waitForEvent('Test', [p0, p1]),
-                                waitForEvent('TestP0', [p0, p1]),
-                                waitForEvent('TestP0P1', [p0, p1]),
-                                waitForEvent('TestIndexedString', [{ indexed: true, hash: '0x7c5ea36004851c764c44143b1dcb59679b11c9a68e5f41497f6cf3d480715331' }, p1]),
-                                waitForEvent('TestV2', [{ indexed: true }, [p0, p1]]),
-                                waitForEvent('TestV2Nested', [{ indexed: true }, [p0_1, p1_1, [p0, p1]]]),
-                            ]).then(function (result) {
-                                resolve(result);
-                            });
+                    return [4 /*yield*/, (0, utils_1.sendTransaction)({
+                            to: "0x63c5bd7ef280f150aca761a5e9a922959eb26732",
+                            data: "0xbabf890100000000000000000000000006b5955a67d827cdf91823e3bb8f069e6c89c1d600000000000000000000000000000000000000000000000000000000000000420000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000a48656c6c6f576f726c6400000000000000000000000000000000000000000000"
                         })];
+                case 1:
+                    hash = _a.sent();
+                    console.log('*** Triggered Transaction Hash: ' + hash);
+                    return [2 /*return*/, running];
             }
         });
     });

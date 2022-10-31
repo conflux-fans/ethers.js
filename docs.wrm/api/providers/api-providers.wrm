@@ -11,7 +11,7 @@ To mitigate these issues, it is recommended you use a
 [Default Provider](providers-getDefaultProvider).
 
 
-_subsection: EtherscanProvider @<EtherscanProvider> @inherit<[[Provider]]> @src<providers:class.EtherscanProvider>
+_subsection: EtherscanProvider @<EtherscanProvider> @inherit<[[BaseProvider]]> @src<providers:class.EtherscanProvider>
 
 The **EtherscanProvider** is backed by a combination of the various
 [Etherscan APIs](link-etherscan-api).
@@ -39,11 +39,11 @@ It is highly recommended for production, you register with
 
 _definition: **Supported Networks**
 
-- Homestead (Mainnet)
-- Ropsten (proof-of-work testnet)
-- Rinkeby (proof-of-authority testnet)
-- G&ouml;rli (clique testnet)
-- Kovan (proof-of-authority testnet)
+- ``homestead`` - Homestead (Mainnet)
+- ``ropsten`` - Ropsten (proof-of-work testnet)
+- ``rinkeby`` - Rinkeby (proof-of-authority testnet)
+- ``goerli`` - G&ouml;rli (clique testnet)
+- ``kovan`` - Kovan (proof-of-authority testnet)
 
 _code: Etherscan Examples @lang<javascript>
 
@@ -106,11 +106,17 @@ It is highly recommended for production, you register with
 
 _definition: **Supported Networks**
 
-- Homestead (Mainnet)
-- Ropsten (proof-of-work testnet)
-- Rinkeby (proof-of-authority testnet)
-- G&ouml;rli (clique testnet)
-- Kovan (proof-of-authority testnet)
+- ``homestead`` - Homestead (Mainnet)
+- ``ropsten`` - Ropsten (proof-of-work testnet)
+- ``rinkeby`` - Rinkeby (proof-of-authority testnet)
+- ``goerli`` - G&ouml;rli (clique testnet)
+- ``kovan`` - Kovan (proof-of-authority testnet)
+- ``matic`` - Polygon
+- ``maticmum`` - Polygon Mumbai Testnet
+- ``optimism`` - Optimism (L2; optimistic roll-up)
+- ``optimism-kovan`` - Optimism Testnet (L2; optimistic roll-up testnet)
+- ``arbitrum`` - Arbitrum (L2; optimistic roll-up)
+- ``arbitrum-rinkeby`` - Arbitrum Testnet (L2; optimistic roll-up testnet)
 
 _code: INFURA Examples @lang<javascript>
 
@@ -161,11 +167,17 @@ It is highly recommended for production, you register with
 
 _definition: **Supported Networks**
 
-- Homestead (Mainnet)
-- Ropsten (proof-of-work testnet)
-- Rinkeby (proof-of-authority testnet)
-- G&ouml;rli (clique testnet)
-- Kovan (proof-of-authority testnet)
+- ``homestead`` - Homestead (Mainnet)
+- ``ropsten`` - Ropsten (proof-of-work testnet)
+- ``rinkeby`` - Rinkeby (proof-of-authority testnet)
+- ``goerli`` - G&ouml;rli (clique testnet)
+- ``kovan`` - Kovan (proof-of-authority testnet)
+- ``matic`` - Polygon
+- ``maticmum`` - Polygon Mumbai Testnet
+- ``optimism`` - Optimism (L2; optimistic roll-up)
+- ``optimism-kovan`` - Optimism Testnet (L2; optimistic roll-up testnet)
+- ``arbitrum`` - Arbitrum (L2; optimistic roll-up)
+- ``arbitrum-rinkeby`` - Arbitrum Testnet (L2; optimistic roll-up testnet)
 
 _code: Alchemy Examples @lang<javascript>
 
@@ -197,7 +209,7 @@ Create a new **CloudflareProvider** connected to mainnet (i.e. "homestead").
 
 _definition: **Supported Networks**
 
-- Homestead (Mainnet)
+- ``homestead`` - Homestead (Mainnet)
 
 _code: Cloudflare Examples @lang<javascript>
 
@@ -205,3 +217,98 @@ _code: Cloudflare Examples @lang<javascript>
 
 // Connect to mainnet (homestead)
 provider = new CloudflareProvider();
+
+
+_subsection: PocketProvider @<PocketProvider> @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.PocketProvider>
+
+The **PocketProvider** is backed by [Pocket](link-pocket).
+
+_property: new ethers.providers.PocketProvider([ network = "homestead", [ apiKey ] ])
+Create a new **PocketProvider** connected to //network// with
+the optional //apiKey//.
+
+The //network// may be specified as a **string** for a common
+network name, a **number** for a common chain ID or a
+[Network Object](providers-Network).
+
+_note: Note: Default API keys
+If no //apiKey// is provided, a shared API key will be used,
+which may result in reduced performance and throttled requests.
+
+It is highly recommended for production, you register with
+[Pocket](link-pocket) for your own API key.
+
+_definition: **Supported Networks**
+
+- ``homestead`` - Homestead (Mainnet)
+- ``ropsten`` - Ropsten (proof-of-work testnet)
+- ``rinkeby`` - Rinkeby (proof-of-authority testnet)
+- ``goerli`` - G&ouml;rli (clique testnet)
+
+_code: Pocket Examples @lang<javascript>
+
+//_hide: const PocketProvider = ethers.providers.PocketProvider;
+//_hide: const applicationId = "...";
+//_hide: const applicationSecretKey = "...";
+//_hide: const loadBalancer = true;
+
+// Connect to mainnet (homestead)
+provider = new PocketProvider();
+
+// Connect to the ropsten testnet
+// (see EtherscanProvider above for other network examples)
+provider = new PocketProvider("ropsten");
+
+// Connect to mainnet with an Application ID (these are equivalent)
+provider = new PocketProvider(null, applicationId);
+provider = new PocketProvider("homestead", applicationId);
+
+// Connect to mainnet with an application ID, application secret
+// and specify whether to use the load balances
+provider = new PocketProvider("homestead", {
+    applicationId: applicationId,
+    applicationSecretKey: applicationSecretKey,
+    loadBalancer: loadBalancer     // true or false
+});
+
+
+_subsection: AnkrProvider @<AnkrProvider> @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.AnkrProvider>
+
+The **AnkrProvider** is backed by [Ankr](link-ankr).
+
+_property: new ethers.providers.AnkrProvider([ network = "homestead", [ apiKey ] ])
+Create a new **AnkrProvider** connected to //network// with
+the optional //apiKey//.
+
+The //network// may be specified as a **string** for a common
+network name, a **number** for a common chain ID or a
+[Network Object](providers-Network).
+
+_note: Note: Default API keys
+If no //apiKey// is provided, a shared API key will be used,
+which may result in reduced performance and throttled requests.
+
+It is highly recommended for production, you register with
+[Ankr](link-ankr) for your own API key.
+
+_definition: **Supported Networks**
+
+- ``homestead`` - Homestead (Mainnet)
+- ``matic`` - Polygon
+- ``arbitrum`` - Arbitrum (L2; optimistic roll-up)
+
+_code: Ankr Examples @lang<javascript>
+
+//_hide: const AnkrProvider = ethers.providers.AnkrProvider;
+//_hide: const apiKey = "...";
+
+// Connect to mainnet (homestead)
+provider = new AnkrProvider();
+
+// Connect to polygont
+// (see EtherscanProvider above for other network examples)
+provider = new AnkrProvider("matic");
+
+// Connect to mainnet with an API Key (these are equivalent)
+provider = new AnkrProvider(null, apiKey);
+provider = new AnkrProvider("homestead", apiKey);

@@ -137,7 +137,7 @@ function getValues(object, named) {
 }
 describe('ABI Coder Encoding', function () {
     var coder = ethers_1.ethers.utils.defaultAbiCoder;
-    var tests = testcases_1.loadTests('contract-interface');
+    var tests = (0, testcases_1.loadTests)('contract-interface');
     tests.forEach(function (test) {
         var values = getValues(JSON.parse(test.normalizedValues));
         var types = JSON.parse(test.types);
@@ -152,7 +152,7 @@ describe('ABI Coder Encoding', function () {
 });
 describe('ABI Coder Decoding', function () {
     var coder = ethers_1.ethers.utils.defaultAbiCoder;
-    var tests = testcases_1.loadTests('contract-interface');
+    var tests = (0, testcases_1.loadTests)('contract-interface');
     tests.forEach(function (test) {
         var values = getValues(JSON.parse(test.normalizedValues));
         var types = JSON.parse(test.types);
@@ -167,7 +167,7 @@ describe('ABI Coder Decoding', function () {
 });
 describe('ABI Coder ABIv2 Encoding', function () {
     var coder = ethers_1.ethers.utils.defaultAbiCoder;
-    var tests = testcases_1.loadTests('contract-interface-abi2');
+    var tests = (0, testcases_1.loadTests)('contract-interface-abi2');
     tests.forEach(function (test) {
         var values = getValues(JSON.parse(test.values));
         //let namedValues = getValues(JSON.parse(test.values), true);
@@ -185,7 +185,7 @@ describe('ABI Coder ABIv2 Encoding', function () {
 });
 describe('ABI Coder ABIv2 Decoding', function () {
     var coder = ethers_1.ethers.utils.defaultAbiCoder;
-    var tests = testcases_1.loadTests('contract-interface-abi2');
+    var tests = (0, testcases_1.loadTests)('contract-interface-abi2');
     tests.forEach(function (test) {
         var values = getValues(JSON.parse(test.values));
         var types = JSON.parse(test.types);
@@ -199,7 +199,7 @@ describe('ABI Coder ABIv2 Decoding', function () {
     });
 });
 describe('Test Contract Events', function () {
-    var tests = testcases_1.loadTests('contract-events');
+    var tests = (0, testcases_1.loadTests)('contract-events');
     tests.forEach(function (test, index) {
         it(('decodes event parameters - ' + test.name + ' - ' + test.types), function () {
             this.timeout(120000);
@@ -232,7 +232,7 @@ describe('Test Contract Events', function () {
     });
 });
 describe('Test Interface Signatures', function () {
-    var tests = testcases_1.loadTests('contract-signatures');
+    var tests = (0, testcases_1.loadTests)('contract-signatures');
     tests.forEach(function (test) {
         it('derives the correct signature - ' + test.name, function () {
             var iface = new ethers_1.ethers.utils.Interface(test.abi);
@@ -547,14 +547,14 @@ describe("Test ParamType Parser", function () {
     });
 });
 describe('Test EIP-838 Error Codes', function () {
-    var addr = "0xbd0B4B009a76CA97766360F04f75e05A3E449f1E";
+    var addr = "0x9FC52a97e59aeea064D9c24a383B70e8475b3e0B";
     it("testError1", function () {
         return __awaiter(this, void 0, void 0, function () {
             var provider, contract, result, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        provider = new ethers_1.ethers.providers.InfuraProvider("ropsten", "49a0efa3aaee4fd99797bfa94d8ce2f1");
+                        provider = new ethers_1.ethers.providers.InfuraProvider("goerli", "49a0efa3aaee4fd99797bfa94d8ce2f1");
                         contract = new ethers_1.ethers.Contract(addr, [
                             "function testError1(bool pass, address addr, uint256 value) pure returns (bool)",
                             "function testError2(bool pass, bytes data) pure returns (bool)",
@@ -584,6 +584,17 @@ describe('Test EIP-838 Error Codes', function () {
                 }
             });
         });
+    });
+});
+describe("Additional test cases", function () {
+    // See: #1906
+    it("allows addresses without the 0x", function () {
+        var iface = new ethers_1.ethers.utils.Interface([
+            "function test(address foo) view returns (bool)"
+        ]);
+        //const tx = 
+        iface.encodeFunctionData("test", ["c1912fee45d61c87cc5ea59dae31190fffff232d"]);
+        //console.log(tx);
     });
 });
 //# sourceMappingURL=test-contract-interface.js.map

@@ -4,9 +4,11 @@ import assert from "assert";
 
 import { ethers } from "ethers";
 
+import { sendTransaction } from "./utils"
+
 import contractData from "./test-contract.json";
 
-const provider = new ethers.providers.InfuraProvider("rinkeby", "49a0efa3aaee4fd99797bfa94d8ce2f1");
+const provider = new ethers.providers.InfuraProvider("goerli", "49a0efa3aaee4fd99797bfa94d8ce2f1");
 //const provider = ethers.getDefaultProvider("rinkeby");
 
 const TIMEOUT_PERIOD = 120000;
@@ -42,19 +44,18 @@ function equals(name: string, actual: any, expected: any): void {
 }
 
 async function TestContractEvents() {
-    const data = await ethers.utils.fetchJson('https://api.ethers.io/api/v1/?action=triggerTest&address=' + contract.address);
-
-    console.log('*** Triggered Transaction Hash: ' + data.hash);
-
-    contract.on("error", (error) => {
-        console.log(error);
-        assert(false);
-        contract.removeAllListeners();
-    });
 
     function waitForEvent(eventName: string, expected: Array<any>): Promise<void> {
         return new Promise(function(resolve, reject) {
             let done = false;
+
+            contract.on("error", (error) => {
+                if (done) { return; }
+                done = true;
+                contract.removeAllListeners();
+                reject(error);
+            });
+
             contract.on(eventName, function() {
                 if (done) { return; }
                 done = true;
@@ -77,7 +78,7 @@ async function TestContractEvents() {
         });
     }
 
-    return new Promise(function(resolve, reject) {
+    const running = new Promise(function(resolve, reject) {
         let p0 = '0x06B5955A67D827CDF91823E3bB8F069e6c89c1D6';
         let p0_1 = '0x06b5955A67d827CdF91823e3Bb8F069e6C89C1d7';
         let p1 = 0x42;
@@ -94,6 +95,15 @@ async function TestContractEvents() {
             resolve(result);
         });
     });
+
+    const hash = await sendTransaction({
+        to: "0x63c5bd7ef280f150aca761a5e9a922959eb26732",
+        data: "0xbabf890100000000000000000000000006b5955a67d827cdf91823e3bb8f069e6c89c1d600000000000000000000000000000000000000000000000000000000000000420000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000a48656c6c6f576f726c6400000000000000000000000000000000000000000000"
+    });
+
+    console.log('*** Triggered Transaction Hash: ' + hash);
+
+    return running;
 }
 
 describe('Test Contract Objects', function() {

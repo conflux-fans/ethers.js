@@ -31,6 +31,17 @@ function addUtilsReplace(plugins) {
     return plugins;
 }
 
+function addLangReplace(plugins) {
+
+    plugins.push(replace({
+        'require("./wordlists")': 'require("./browser-wordlists")/*RicMoo:ethers:require(wordlists)*/',
+        include: "**/wordlists/lib/index.js",
+        delimiters: [ '', '' ]
+    }));
+
+    return plugins;
+}
+
 function addEllipticReplace(plugins) {
 
     // Replace the package.json in elliptic
@@ -70,6 +81,7 @@ function getUmdConfig() {
 
     addUtilsReplace(plugins);
     addEllipticReplace(plugins);
+    addLangReplace(plugins);
 
     plugins.push(resolveNode({
         mainFields: [ "browser", "main" ]
@@ -84,7 +96,7 @@ function getUmdConfig() {
             name: "ethers",
             sourcemap: true
         },
-        context: "window",
+        context: "commonjsGlobal",
         treeshake: false,
         plugins
     };
@@ -110,7 +122,7 @@ function getEsmConfig() {
             format: "esm",
             sourcemap: true
         },
-        context: "window",
+        context: "commonjsGlobal",
         treeshake: false,
         plugins
     };

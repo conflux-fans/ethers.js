@@ -96,6 +96,10 @@ reading and debugging much simpler.
 The provider offers some basic operations to help resolve and
 work with ENS names.
 
+_property: provider.getAvatar(name) => Promise<string>
+Returns the URL for the avatar associated to the ENS name, or null
+if no avatar was configured.
+
 _property: provider.getResolver(name) => Promise<[[EnsResolver]]>
 Returns an EnsResolver instance which can be used to further inquire
 about specific entries for an ENS name.
@@ -162,6 +166,18 @@ await resolver.getAddress();
 //_result:
 await resolver.getAddress(0);
 //_log:
+
+_property: resolver.getAvatar() => Promise<AvatarInfo>
+Returns an object the provides the URL of the avatar and the
+linkage representing each stage in the avatar resolution.
+
+If there is no avatar found (or the owner of any NFT does not
+match the name owner), null is returned.
+
+The AvatarInfo has the properties:
+
+- ``info.linkage`` - An array of info on each step resolving the avatar
+- ``info.url`` - The URL of the avatar
 
 _property: resolver.getContentHash() => Promise<string>
 Returns a Promise which resolves to any stored [[link-eip-1577]] content hash.
@@ -240,6 +256,27 @@ gasPrice = await provider.getGasPrice()
 utils.formatUnits(gasPrice, "gwei")
 //_log:
 
+_property: provider.getFeeData() => Promise<[[providers-FeeData]]>  @<Provider-getFeeData> @SRC<abstract-provider>
+Returns the current recommended [[providers-FeeData]] to use in a transaction.
+
+For an EIP-1559 transaction, the ``maxFeePerGas`` and ``maxPriorityFeePerGas``
+should be used.
+
+For legacy transactions and networks which do not support EIP-1559, the ``gasPrice``
+should be used.
+
+_code: @lang<javascript>
+
+// The gas price (in wei)...
+feeData = await provider.getFeeData()
+//_log: feeData
+
+// ...often these values are easier to understand or
+// display to the user in gwei
+//_result:
+utils.formatUnits(feeData.maxFeePerGas, "gwei")
+//_log:
+
 _property: provider.ready => Promise<[[providers-Network]]> @<Provider-ready> @src<providers/base-provider>
 Returns a Promise which will stall until the network has heen established,
 ignoring errors due to the target node not being active yet.
@@ -259,7 +296,7 @@ _code: @lang<javascript>
 
 //_result:
 await provider.call({
-  // ENS public resovler address
+  // ENS public resolver address
   to: "0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41",
 
   // `function addr(namehash("ricmoo.eth")) view returns (address)`
@@ -333,9 +370,12 @@ _code: @lang<javascript>
 //_hide:   value: ethers.utils.parseEther("2.0")
 //_hide: });
 //_hide: await fundTx.wait();
+//_hide: const tx = await localSigner.populateTransaction({ to: "ricmoo.eth", value: ethers.utils.parseEther("3.14159") });
+//_hide: const signedTx = await localSigner.signTransaction(tx);
 
+//_verbatim: `const signedTx = ${ JSON.stringify(signedTx) };`
 //_result:
-await provider.sendTransaction("0xf86e808502540be400825208948ba1f109551bd432803012645ac136ddd64dba72880de0b6b3a764000080820a96a0f0c5bcb11e5a16ab116c60a0e5837ae98ec36e7f217740076572e8183002edd2a01ed1b4411c2840b9793e8be5415a554507f1ea320069be6dcecabd7b9097dbd4");
+await provider.sendTransaction(signedTx);
 //_log:
 
 _property: provider.waitForTransaction(hash [ , confirms = 1 [ , timeout ] ]) => Promise<[TxReceipt](providers-TransactionReceipt)>  @<Provider-waitForTransaction> @SRC<providers/base-provider>
@@ -453,6 +493,7 @@ _code: Events Example @lang<javascript>
 //_hide: const txHash = utils.id("dummy-data");
 //_hide: const myAddress = ethers.constants.HashZero;
 //_hide: const myOtherAddress = ethers.constants.HashZero;
+//_hide: const hexZeroPad = ethers.utils.hexZeroPad;
 
 provider.on("block", (blockNumber) => {
     // Emitted on every block change
@@ -484,8 +525,8 @@ topicSets = [
     utils.id("Transfer(address,address,uint256)"),
     null,
     [
-        myAddress,
-        myOtherAddress
+        hexZeroPad(myAddress, 32),
+        hexZeroPad(myOtherAddress, 32)
     ]
 ]
 provider.on(topicSets, (log, event) => {
@@ -508,4 +549,18 @@ _subsection: Inspection Methods  @<Provider--inspection-methods>
 
 _property: Provider.isProvider(object) => boolean  @<Provider-isProvider> @SRC<abstract-provider>
 Returns true if and only if //object// is a Provider.
+
+
+_subsection: BaseProvider @<BaseProvider> @INHERIT<[[Provider]]> @SRC<providers:class.BaseProvider>
+
+Most Providers available in ethers are sub-classes of BaseProvider, which
+simplifies sub-classes, as it handles much of the event operations, such as
+polling and formatting.
+
+_property: provider.polling => boolean
+Indicates if the Provider is currently polling. If there are no events to
+poll for or polling has been explicitly disabled, this will be false.
+
+_property: provider.pollingInterval => number
+The frequency at which the provider polls.
 

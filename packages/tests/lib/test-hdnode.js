@@ -8,7 +8,7 @@ var ethers_1 = require("ethers");
 var testcases_1 = require("@ethersproject/testcases");
 function randomCase(seed, text) {
     return text.split("").map(function (c, index) {
-        if (testcases_1.randomNumber(seed + "-" + index, 0, 2)) {
+        if ((0, testcases_1.randomNumber)(seed + "-" + index, 0, 2)) {
             return c.toUpperCase();
         }
         return c;
@@ -24,10 +24,14 @@ function checkRandom(name) {
     */
     return true;
 }
+var isBrowser = (typeof (navigator) !== "undefined");
 describe('Test HD Node Derivation is Case Agnostic', function () {
-    var tests = testcases_1.loadTests('hdnode');
+    var tests = (0, testcases_1.loadTests)('hdnode');
     tests.forEach(function (test) {
         if (!checkRandom(test.name)) {
+            return;
+        }
+        if (isBrowser && test.locale !== "en") {
             return;
         }
         it("Normalizes case - " + test.name, function () {
@@ -41,13 +45,16 @@ describe('Test HD Node Derivation is Case Agnostic', function () {
     });
 });
 describe('Test HD Node Derivation from Seed', function () {
-    var tests = testcases_1.loadTests('hdnode');
+    var tests = (0, testcases_1.loadTests)('hdnode');
     tests.forEach(function (test) {
         if (!checkRandom(test.name)) {
             return;
         }
         // If there is nothing to derive, skip this portion of the test
         if (test.hdnodes.length === 0) {
+            return;
+        }
+        if (isBrowser && test.locale !== "en") {
             return;
         }
         it('Derives the HD nodes - ' + test.name, function () {
@@ -63,9 +70,12 @@ describe('Test HD Node Derivation from Seed', function () {
     });
 });
 describe('Test HD Node Derivation from Mnemonic', function () {
-    var tests = testcases_1.loadTests('hdnode');
+    var tests = (0, testcases_1.loadTests)('hdnode');
     tests.forEach(function (test) {
         if (!checkRandom(test.name)) {
+            return;
+        }
+        if (isBrowser && test.locale !== "en") {
             return;
         }
         // If there is nothing to derive, skip this portion of the test
@@ -88,9 +98,12 @@ describe('Test HD Node Derivation from Mnemonic', function () {
     });
 });
 describe('Test HD Mnemonic Phrases', function testMnemonic() {
-    var tests = testcases_1.loadTests('hdnode');
+    var tests = (0, testcases_1.loadTests)('hdnode');
     tests.forEach(function (test) {
         if (!checkRandom(test.name)) {
+            return;
+        }
+        if (isBrowser && test.locale !== "en") {
             return;
         }
         it(('converts mnemonic phrases - ' + test.name), function () {
